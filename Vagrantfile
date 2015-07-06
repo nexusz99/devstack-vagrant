@@ -66,7 +66,7 @@ def configure_vm(name, vm, conf)
     puppet.facter = {
       ## tells default.pp that we're running in Vagrant
       "is_vagrant" => true,
-      "is_compute" => (name != "manager"),
+      "is_compute" => false,
       "use_ldap" => conf["use_ldap"] || false,
       "extra_images" => conf["extra_images"] || "",
     }
@@ -105,7 +105,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # version as soon as you can.
   config.vm.box = conf['box_name'] || 'ubuntu/trusty64'
   config.vm.box_url = conf['box_url'] if conf['box_url']
-
+  config.vm.provider "virtualbox" do |v|
+            v.memory = 2048
+            v.cpus = 2
+  end
   if Vagrant.has_plugin?("vagrant-cachier")
     config.cache.scope = :box
   end
@@ -150,11 +153,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     manager.vm.network "forwarded_port", guest: 6080, host: 6080, host_ip: "127.0.0.1"
   end
 
-  if conf['hostname_compute']
-    config.vm.define "compute" do |compute|
-      configure_vm("compute", compute.vm, conf)
-    end
-  end
 
   # If true, then any SSH connections made will enable agent forwarding.
   # Default value: false
